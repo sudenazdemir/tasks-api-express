@@ -15,6 +15,13 @@ Basit bir RESTful API — Node.js (Express) ile yapılmış, CRUD işlemleri ve 
 Bu proje **Vitest + Supertest** ile test edilmiştir.  
 Testler CI pipeline'da otomatik olarak çalışır ve Codecov aracılığıyla coverage raporu yüklenir.
 
+## 📘 API Documentation
+Interactive Swagger UI is available at:
+
+👉 [http://localhost:3000/docs](http://localhost:3000/docs)
+
+The API documentation is automatically generated with **swagger-ui-express** and **swagger-jsdoc**.
+
 ## 🛠️ Çalıştırmak için
 ```bash
 npm install

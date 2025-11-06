@@ -2,6 +2,8 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 // __dirname eşdeğeri (ESM)
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +33,18 @@ const PORT = process.env.PORT || 3000;
 
 // JSON gövde parse
 app.use(express.json());
+const swaggerSpec = swaggerJSDoc({
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Tasks API',
+            version: '1.0.0',
+            description: 'A simple Tasks API',
+        },
+    },
+    apis: [__filename], // Bu dosyayı kullan
+});
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // basit kök
 app.get('/', (req, res) => {
