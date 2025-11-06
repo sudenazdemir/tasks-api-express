@@ -34,15 +34,30 @@ const PORT = process.env.PORT || 3000;
 // JSON gövde parse
 app.use(express.json());
 const swaggerSpec = swaggerJSDoc({
-    definition: {
-        openapi: '3.0.0',
-        info: {
-            title: 'Tasks API',
-            version: '1.0.0',
-            description: 'A simple Tasks API',
-        },
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Tasks API',
+      version: '1.0.0',
+      description: 'Simple Tasks REST API with Express (CRUD + filters + pagination + sorting)',
     },
-    apis: [__filename], // Bu dosyayı kullan
+    servers: [{ url: 'http://localhost:3000' }],
+    components: {
+      schemas: {
+        Task: {
+          type: 'object',
+          required: ['id', 'title', 'done', 'createdAt'],
+          properties: {
+            id: { type: 'integer', example: 1 },
+            title: { type: 'string', example: 'Learn Express' },
+            done: { type: 'boolean', example: false },
+            createdAt: { type: 'string', format: 'date-time', example: '2025-11-06T08:01:00.000Z' }
+          }
+        }
+      }
+    }
+  },
+  apis: ['./index.js'], // <-- JSDoc yorumlarını buradan okuyacak
 });
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -52,11 +67,62 @@ app.get('/', (req, res) => {
 });
 
 /**
- * GET /tasks
- * Tüm görevleri getirir
- * Query destekleri:
- *   ?done=true/false   -> filtreleme
- *   ?search=keyword    -> başlığa göre arama
+ * @openapi
+ * /tasks:
+ *   get:
+ *     summary: List tasks
+ *     description: Returns tasks with optional filters (done, search), sorting, and pagination.
+ *     parameters:
+ *       - in: query
+ *         name: done
+ *         schema: { type: string, enum: [true, false] }
+ *         description: Filter by completion (true/false)
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *         description: Case-insensitive substring search on title
+ *       - in: query
+ *         name: sort
+ *         schema: { type: string, enum: [id, title, done, createdAt] }
+ *         description: Sort field
+ *       - in: query
+ *         name: order
+ *         schema: { type: string, enum: [asc, desc], default: asc }
+ *         description: Sort order
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, minimum: 1 }
+ *         description: Page size
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *         description: Page number (1-based)
+ *     responses:
+ *       200:
+ *         description: Tasks list (may be wrapped with pagination metadata)
+ *         content:
+ *           application/json:
+ *             oneOf:
+ *               - type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Task'
+ *               - type: object
+ *                 properties:
+ *                   total: { type: integer, example: 5 }
+ *                   count: { type: integer, example: 2 }
+ *                   page:  { type: integer, example: 1 }
+ *                   data:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Invalid query parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "done must be 'true' or 'false'" }
  */
 app.get('/tasks', (req, res) => {
     const { done, search, sort, order = "asc", limit, page } = req.query;
@@ -117,8 +183,36 @@ app.get('/tasks', (req, res) => {
 });
 
 /**
- * GET /tasks/:id
- * Tek bir görevi getirir
+ * @openapi
+ * /tasks/{id}:
+ *   get:
+ *     summary: Get a task by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Task found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Invalid id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties: { error: { type: string, example: 'invalid id' } }
+ *       404:
+ *         description: Task not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties: { error: { type: string, example: 'task not found' } }
  */
 app.get('/tasks/:id', (req, res) => {
     const id = Number(req.params.id);
@@ -130,9 +224,33 @@ app.get('/tasks/:id', (req, res) => {
 });
 
 /**
- * POST /tasks
- * Body: { "title": "string" }
- * Yeni görev oluşturur
+ * @openapi
+ * /tasks:
+ *   post:
+ *     summary: Create a task
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [title]
+ *             properties:
+ *               title: { type: string, example: "Write API tests" }
+ *     responses:
+ *       201:
+ *         description: Task created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Validation error (missing/empty title)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties: { error: { type: string, example: 'title is required (non-empty string)' } }
  */
 app.post('/tasks', (req, res) => {
     const { title } = req.body || {};
@@ -153,9 +271,45 @@ app.post('/tasks', (req, res) => {
 });
 
 /**
- * PATCH /tasks/:id
- * Body: { "title"?: "string", "done"?: true|false }
- * Kısmi güncelleme
+ * @openapi
+ * /tasks/{id}:
+ *   patch:
+ *     summary: Partially update a task (title/done)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string, example: "Learn Express (updated)" }
+ *               done:  { type: boolean, example: true }
+ *     responses:
+ *       200:
+ *         description: Updated task
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Validation error (bad title/done)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties: { error: { type: string, example: 'done must be boolean when provided' } }
+ *       404:
+ *         description: Task not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties: { error: { type: string, example: 'task not found' } }
  */
 app.patch('/tasks/:id', (req, res) => {
     const id = Number(req.params.id);
@@ -181,8 +335,32 @@ app.patch('/tasks/:id', (req, res) => {
 });
 
 /**
- * DELETE /tasks/:id
- * Görevi siler
+ * @openapi
+ * /tasks/{id}:
+ *   delete:
+ *     summary: Delete a task
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       204:
+ *         description: Deleted successfully (no content)
+ *       400:
+ *         description: Invalid id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties: { error: { type: string, example: 'invalid id' } }
+ *       404:
+ *         description: Task not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties: { error: { type: string, example: 'task not found' } }
  */
 app.delete('/tasks/:id', (req, res) => {
     const id = Number(req.params.id);
