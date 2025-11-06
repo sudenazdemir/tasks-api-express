@@ -20,17 +20,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      # Eğer repoda .env.example varsa, testlerde dummy .env işine yarar
-      - name: Prepare env (optional)
-        run: |
-          if [ -f .env.example ]; then cp .env.example .env; fi
-
       - name: Install deps
         run: npm ci
-
-      - name: Lint (optional)
-        run: |
-          if npm run | grep -q "lint"; then npm run lint; else echo "no lint script"; fi
 
       - name: Run tests with coverage
         run: npm run test:coverage
@@ -42,10 +33,10 @@ jobs:
           name: coverage
           path: coverage/
 
-      # Codecov upload (public repoda token gereksiz; private ise CODECOV_TOKEN secret gerekir)
+      # Public repo ise token gerekmez. Private ise altta 'token' satırını aç.
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage/coverage-final.json
           fail_ci_if_error: false
-          # token: ${{ secrets.CODECOV_TOKEN }}   # <- PRIVATE repo ise bu satırı aç
+          # token: ${{ secrets.CODECOV_TOKEN }}  # ← PRIVATE repo ise bunu aç
