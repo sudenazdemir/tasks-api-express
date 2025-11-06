@@ -3,17 +3,18 @@
 
 # 🧠 Tasks API
 
-Basit bir RESTful API — Node.js (Express) ile yapılmış, CRUD işlemleri ve test coverage örneği içerir.
+A simple RESTful API built with **Node.js (Express)**, showcasing CRUD operations, testing, and coverage integration.
 
-## 🚀 Özellikler
-- GET /tasks – görevleri listele  
-- POST /tasks – yeni görev oluştur  
-- PATCH /tasks/:id – görevi güncelle  
-- DELETE /tasks/:id – görevi sil  
+## 🚀 Features
+- **GET /tasks** – list all tasks  
+- **POST /tasks** – create a new task  
+- **PATCH /tasks/:id** – update a task  
+- **DELETE /tasks/:id** – delete a task  
 
-## 🧪 Test & Coverage
-Bu proje **Vitest + Supertest** ile test edilmiştir.  
-Testler CI pipeline'da otomatik olarak çalışır ve Codecov aracılığıyla coverage raporu yüklenir.
+## 🧪 Testing & Coverage
+This project is tested using **Vitest** and **Supertest**.  
+All tests run automatically via **GitHub Actions**, and coverage reports are uploaded to **Codecov**.
+
 
 ## 📘 API Documentation
 Interactive Swagger UI is available at:
@@ -22,7 +23,7 @@ Interactive Swagger UI is available at:
 
 The API documentation is automatically generated with **swagger-ui-express** and **swagger-jsdoc**.
 
-## 🛠️ Çalıştırmak için
+## 🛠️ How to Run
 ```bash
 npm install
 npm run dev
