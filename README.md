@@ -1,5 +1,5 @@
 ![CI](https://github.com/sudenazdemir/tasks-api-express/actions/workflows/ci.yml/badge.svg)
-[! [codecov](https://codecov.io/gh/sudenazdemir/tasks-api-express/branch/main/graph/badge.svg)](https://codecov.io/gh/sudenazdemir/tasks-api-express)
+[![codecov](https://codecov.io/gh/sudenazdemir/tasks-api-express/branch/main/graph/badge.svg)](https://codecov.io/gh/sudenazdemir/tasks-api-express)
 
 # 🧠 Tasks API
 
