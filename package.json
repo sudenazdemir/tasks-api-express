@@ -1,0 +1,22 @@
+{
+  "name": "tasks-api",
+  "version": "1.0.0",
+  "description": "Simple Tasks REST API with Express",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "vitest --run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.7",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.1.4",
+    "vitest": "^4.0.7"
+  }
+}

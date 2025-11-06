@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Eğer repoda .env.example varsa, testlerde dummy .env işine yarar
+      - name: Prepare env (optional)
+        run: |
+          if [ -f .env.example ]; then cp .env.example .env; fi
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint (optional)
+        run: |
+          if npm run | grep -q "lint"; then npm run lint; else echo "no lint script"; fi
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+      # Codecov upload (public repoda token gereksiz; private ise CODECOV_TOKEN secret gerekir)
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+          # token: ${{ secrets.CODECOV_TOKEN }}   # <- PRIVATE repo ise bu satırı aç
